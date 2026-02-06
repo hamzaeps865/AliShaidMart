@@ -1,7 +1,25 @@
-const Homepage = () => {
-  return (
-    <div className=''>Homepage</div>
-  )
-}
+import FeatureSection from "@/components/AliShaid";
+import ProductList from "@/components/ProductList";
+import Image from "next/image";
 
-export default Homepage
+const Homepage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ category: string }>;
+}) => {
+  const category = (await searchParams).category;
+  return (
+    <div className="">
+      <div className="relative aspect-[3/1] mb-12">
+        <Image src="/featured.png" alt="Featured Product" fill />
+      </div>
+          <div className="my-14">
+      <FeatureSection />
+      </div>
+      
+      <ProductList category={category} params="homepage"/>
+    </div>
+  );
+};
+
+export default Homepage;
