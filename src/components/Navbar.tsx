@@ -1,19 +1,46 @@
+
 'use client';
 
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "./Searchbar";
-import { Bell, Home, ShoppingCart } from "lucide-react";
+import { Bell, Home, ShoppingCart, X, Menu, Search, Mail } from "lucide-react";
 import ShoppingCartIcon from "./ShoppingCartIcon";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
   return (
     <>
-      <nav className="w-full flex items-center justify-between border-b border-gray-200 pb-4">
+      <nav className={`w-full flex items-center justify-between px-4 md:px-6 py-4 sticky top-[10px] bg-white z-50 transition-all duration-300 ${isScrolled ? 'shadow-lg' : 'border-b border-gray-200'}`}>
         {/* LEFT */}
         <Link href="/" className="flex items-center">
           <Image
@@ -28,22 +55,131 @@ const Navbar = () => {
           </p>
         </Link>
         {/* RIGHT */}
-        <div className="flex items-center gap-6">
-          <SearchBar />
-          <Link href="/">
-            <Home className="w-4 h-4 text-gray-600" />
-          </Link>
-          <Bell className="w-4 h-4 text-gray-600" />
-          <ShoppingCartIcon />
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              <Home className="w-4 h-4 text-gray-600" />
+              Home
+            </Link>
+            <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              About Us
+            </Link>
+            <SearchBar />
+            <ShoppingCartIcon />
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="hidden sm:inline-flex items-center justify-center text-sm font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors px-4 py-2 rounded-lg shadow-sm shadow-yellow-200"
+            >
+              Login
+            </button>
+          </div>
+
+          {/* Cart icon visible on mobile navbar */}
+          <div className="sm:hidden">
+            <ShoppingCartIcon />
+          </div>
+
+          {/* Mobile menu button */}
           <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer"
+            aria-label="Toggle menu"
+            className="sm:hidden p-2 rounded-md hover:bg-gray-100"
+            onClick={() => setIsMenuOpen(prev => !prev)}
           >
-            Sign in
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </nav>
+      {/* Mobile menu backdrop */}
+      <div
+        className={`sm:hidden fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMenuOpen(false)}
+      />
 
+      {/* Mobile menu panel - Right-Side Drawer */}
+      <div
+        className={`sm:hidden fixed right-0 top-0 h-full w-[80%] max-w-sm bg-white z-50 shadow-2xl transition-transform duration-300 ease-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-5 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <Image src="/logo.png" alt="logo" width={32} height={32} className="w-8 h-8" />
+              <span className="font-semibold text-lg tracking-tight">AliShaidMart.</span>
+            </div>
+            <button
+              aria-label="Close menu"
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 rounded-full hover:bg-gray-100/80 text-gray-500 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            <SearchBar mobile />
+
+            <nav className="flex flex-col space-y-2">
+              <Link
+                href="/"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
+              >
+                <span className="flex items-center gap-3 text-lg">
+                  <Home className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                  Home
+                </span>
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
+              >
+                <span className="flex items-center gap-3 text-lg">
+                  <span className="w-5 h-5 flex items-center justify-center text-gray-400 group-hover:text-indigo-500 transition-colors font-bold text-xs border-2 border-current rounded-md">?</span>
+                  About Us
+                </span>
+              </Link>
+              <Link
+                href="/all-products"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
+              >
+                <span className="flex items-center gap-3 text-lg">
+                  <ShoppingCart className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                  All Products
+                </span>
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
+              >
+                <span className="flex items-center gap-3 text-lg">
+                  <Mail className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                  Contact Us
+                </span>
+              </Link>
+            </nav>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="p-5 border-t border-gray-100 bg-gray-50/50 space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-sm font-medium text-gray-600">Your Cart</span>
+              <div className="bg-white p-2 rounded-full shadow-sm ring-1 ring-gray-200/50">
+                <ShoppingCartIcon />
+              </div>
+            </div>
+            <button
+              onClick={() => { setIsAuthModalOpen(true); setIsMenuOpen(false); }}
+              className="w-full flex items-center justify-center gap-2 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors py-3.5 rounded-xl  shadow-yellow-200"
+            >
+              Login / Register
+            </button>
+          </div>
+        </div>
+      </div>
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
