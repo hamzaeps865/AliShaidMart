@@ -1,18 +1,20 @@
-
 'use client';
 
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "./Searchbar";
-import { Bell, Home, ShoppingCart, X, Menu, Search, Mail } from "lucide-react";
+import { Home, ShoppingCart, X, Menu, User, Mail, LogOut } from "lucide-react";
 import ShoppingCartIcon from "./ShoppingCartIcon";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import AuthModal from "./AuthModal";
+import { useSession, signOut } from 'next-auth/react';
+import useAuthModalStore from "@/stores/authModalStore";
 
 const Navbar = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { isOpen: isAuthModalOpen, openModal, closeModal } = useAuthModalStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,20 +64,55 @@ const Navbar = () => {
               Home
             </Link>
             <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-              About Us
+              About
             </Link>
             <SearchBar />
             <ShoppingCartIcon />
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="hidden sm:inline-flex items-center justify-center text-sm font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors px-4 py-2 rounded-lg shadow-sm shadow-yellow-200"
-            >
-              Login
-            </button>
+            {status === 'authenticated' ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt={session.user.name || 'User'} className="w-8 h-8 rounded-full border border-gray-200" />
+                  ) : (
+                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200">
+                      <User className="w-4 h-4 text-yellow-600" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-700 hidden lg:inline-block">
+                    {session.user?.name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => signOut()}
+                  className="text-gray-500 hover:text-red-500 transition-colors p-1"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => openModal()}
+                className="hidden cursor-pointer sm:inline-flex items-center justify-center text-sm font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors px-4 py-2 rounded-lg shadow-sm shadow-yellow-200"
+              >
+                Login
+              </button>
+            )}
           </div>
 
-          {/* Cart icon visible on mobile navbar */}
-          <div className="sm:hidden">
+          {/* Cart icon and Avatar visible on mobile navbar */}
+          <div className="sm:hidden flex items-center gap-3">
+            {status === 'authenticated' && (
+              <div className="flex items-center">
+                {session.user?.image ? (
+                  <img src={session.user.image} alt={session.user.name || 'User'} className="w-8 h-8 rounded-full border border-gray-200" />
+                ) : (
+                  <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200">
+                    <User className="w-4 h-4 text-yellow-600" />
+                  </div>
+                )}
+              </div>
+            )}
             <ShoppingCartIcon />
           </div>
 
@@ -141,6 +178,16 @@ const Navbar = () => {
                 </span>
               </Link>
               <Link
+                href="/products"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
+              >
+                <span className="flex items-center gap-3 text-lg">
+                  <ShoppingCart className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                  Shop
+                </span>
+              </Link>
+              <Link
                 href="/all-products"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center justify-between p-3 rounded-xl text-gray-700 hover:bg-gray-50 hover:text-indigo-600 font-medium transition-all group"
@@ -171,19 +218,47 @@ const Navbar = () => {
                 <ShoppingCartIcon />
               </div>
             </div>
-            <button
-              onClick={() => { setIsAuthModalOpen(true); setIsMenuOpen(false); }}
-              className="w-full flex items-center justify-center gap-2 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors py-3.5 rounded-xl  shadow-yellow-200"
-            >
-              Login / Register
-            </button>
+
+            {status === 'authenticated' ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 px-2">
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt={session.user.name || 'User'} className="w-10 h-10 rounded-full border border-gray-200" />
+                  ) : (
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200">
+                      <User className="w-5 h-5 text-yellow-600" />
+                    </div>
+                  )}
+                  <div className="flex-1 overflow-hidden">
+                    <p className="font-bold text-gray-900 truncate">{session.user?.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { signOut(); setIsMenuOpen(false); }}
+                  className="w-full flex items-center justify-center gap-2 text-base font-semibold text-red-600 bg-white border border-red-100 hover:bg-red-50 transition-colors py-3.5 rounded-xl shadow-sm cursor-pointer"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { openModal(); setIsMenuOpen(false); }}
+                className="w-full flex items-center justify-center gap-2 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors py-3.5 rounded-xl  shadow-yellow-200 cursor-pointer"
+              >
+                Login / Register
+              </button>
+            )}
           </div>
         </div>
       </div>
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => closeModal()}
+        />
+      </Suspense>
     </>
   );
 };

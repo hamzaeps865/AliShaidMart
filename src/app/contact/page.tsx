@@ -48,7 +48,7 @@ const ContactUs: React.FC = () => {
                                     </svg>
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Our Location</h3>
-                                <p className="text-gray-600">Germany</p>
+                                <p className="text-gray-600">Canada Toronto</p>
                             </div>
 
                             {/* Email Card */}
@@ -59,7 +59,7 @@ const ContactUs: React.FC = () => {
                                     </svg>
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Email Us</h3>
-                                <p className="text-gray-600">info@loremipsum.se</p>
+                                <p className="text-gray-600">alishaidmart@gmail.com</p>
                             </div>
 
                             {/* Phone Card */}
@@ -70,7 +70,7 @@ const ContactUs: React.FC = () => {
                                     </svg>
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Call Us</h3>
-                                <p className="text-gray-600">(+48) 833-112233</p>
+                                <p className="text-gray-600">(+1) 833-112233</p>
                             </div>
 
                             {/* Social Media */}
@@ -119,7 +119,7 @@ const ContactUs: React.FC = () => {
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                placeholder="John Doe"
+                                                placeholder="Ali Shaid"
                                                 className="w-full bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 py-3 px-4 outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300"
                                                 required
                                             />
@@ -136,7 +136,7 @@ const ContactUs: React.FC = () => {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                placeholder="john@example.com"
+                                                placeholder="ali@example.com"
                                                 className="w-full bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 py-3 px-4 outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300"
                                                 required
                                             />
