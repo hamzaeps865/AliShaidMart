@@ -35,6 +35,7 @@ const ProductInteraction = ({ product, selectedColor, selectedSize }: { product:
     }
   }
   const handleAddToCart = () => {
+    if (status === 'loading') return // Wait for session to resolve
     if (status !== 'authenticated') {
       openModal()
       return
@@ -49,6 +50,7 @@ const ProductInteraction = ({ product, selectedColor, selectedSize }: { product:
   }
 
   const handleBuyNow = () => {
+    if (status === 'loading') return // Wait for session to resolve
     if (status !== 'authenticated') {
       openModal()
       return
