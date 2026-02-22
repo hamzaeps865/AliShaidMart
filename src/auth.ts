@@ -7,6 +7,7 @@ import clientPromise from "@/lib/mongodb"
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: MongoDBAdapter(clientPromise),
     trustHost: true,
+    
     session: {
         strategy: "jwt", // Use JWT so middleware can verify sessions in Edge Runtime without hitting the DB
     },
