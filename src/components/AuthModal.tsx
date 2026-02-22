@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
+import { signIn } from 'next-auth/react';
 import { ShoppingBag, X } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -14,6 +16,8 @@ type AuthMode = 'login' | 'signup';
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const [mode, setMode] = useState<AuthMode>('login');
+    const [isLoading, setIsLoading] = useState(false);
+
     // Login State
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
@@ -34,6 +38,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         } else {
             document.body.style.overflow = 'unset';
             setMode('login');
+            setIsLoading(false);
         }
         return () => {
             document.body.style.overflow = 'unset';
@@ -42,24 +47,83 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
-    const handleLoginSubmit = (e: React.FormEvent) => {
+    const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login submitted:', { email: loginEmail, password: loginPassword });
-        onClose();
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success('Logged in successfully!');
+                onClose();
+            } else {
+                toast.error(data.message || 'Login failed');
+            }
+        } catch (error) {
+            toast.error('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleSignupSubmit = (e: React.FormEvent) => {
+    const handleSignupSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Signup submitted:', { name: signupName, email: signupEmail, password: signupPassword, confirmPassword: signupConfirmPassword });
-        onClose();
+        if (signupPassword !== signupConfirmPassword) {
+            toast.error('Passwords do not match');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: signupName,
+                    email: signupEmail,
+                    password: signupPassword,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success('Registration successful! Please login.');
+                setMode('login');
+            } else {
+                toast.error(data.message || 'Registration failed');
+            }
+        } catch (error) {
+            toast.error('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleGoogleAuth = () => {
-        console.log(`Google ${mode} clicked`);
+    const handleGoogleAuth = async () => {
+        setIsLoading(true);
+        try {
+            await signIn('google');
+        } catch (error) {
+            toast.error('Google authentication failed');
+            setIsLoading(false);
+        }
     };
 
-    const handleFacebookAuth = () => {
-        console.log(`Facebook ${mode} clicked`);
+    const handleFacebookAuth = async () => {
+        setIsLoading(true);
+        try {
+            await signIn('facebook');
+        } catch (error) {
+            toast.error('Facebook authentication failed');
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -194,7 +258,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2.5 px-6 rounded-lg transition-all duration-200 shadow-md shadow-yellow-400/20 hover:shadow-yellow-400/40 transform hover:-translate-y-0.5 cursor-pointer text-sm"
+                                disabled={isLoading}
+                                className={`w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2.5 px-6 rounded-lg transition-all duration-200 shadow-md shadow-yellow-400/20 hover:shadow-yellow-400/40 transform hover:-translate-y-0.5 cursor-pointer text-sm ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 Sign In
                             </button>
@@ -272,7 +337,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2.5 px-6 rounded-lg transition-all duration-200 shadow-md shadow-yellow-400/20 hover:shadow-yellow-400/40 transform hover:-translate-y-0.5 cursor-pointer mt-2 text-sm"
+                                disabled={isLoading}
+                                className={`w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2.5 px-6 rounded-lg transition-all duration-200 shadow-md shadow-yellow-400/20 hover:shadow-yellow-400/40 transform hover:-translate-y-0.5 cursor-pointer mt-2 text-sm ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 Sign Up
                             </button>
@@ -319,6 +385,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         </button>
                     </p>
                 </div>
+
+                {/* Loading Overlay */}
+                {isLoading && (
+                    <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] transition-all duration-300">
+                        <div className="relative">
+                            {/* Outer spinning ring */}
+                            <div className="w-16 h-16 border-4 border-yellow-100 border-t-yellow-400 rounded-full animate-spin"></div>
+                            {/* Inner pulse */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-8 h-8 bg-yellow-400 rounded-full animate-pulse opacity-20"></div>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center">
+                            <h3 className="text-lg font-bold text-gray-900 animate-pulse">Processing...</h3>
+                            <p className="text-sm text-gray-500">Wait a moment please</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
