@@ -6,6 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { signIn } from 'next-auth/react';
 import { ShoppingBag, X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -17,6 +18,9 @@ type AuthMode = 'login' | 'signup';
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const [mode, setMode] = useState<AuthMode>('login');
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
 
     // Login State
     const [loginEmail, setLoginEmail] = useState('');
@@ -62,6 +66,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             if (response.ok) {
                 toast.success('Logged in successfully!');
                 onClose();
+                router.push(callbackUrl);
+                router.refresh();
             } else {
                 toast.error(data.message || 'Login failed');
             }
@@ -109,7 +115,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const handleGoogleAuth = async () => {
         setIsLoading(true);
         try {
-            await signIn('google');
+            await signIn('google', { callbackUrl });
         } catch (error) {
             toast.error('Google authentication failed');
             setIsLoading(false);
@@ -119,7 +125,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const handleFacebookAuth = async () => {
         setIsLoading(true);
         try {
-            await signIn('facebook');
+            await signIn('facebook', { callbackUrl });
         } catch (error) {
             toast.error('Facebook authentication failed');
             setIsLoading(false);

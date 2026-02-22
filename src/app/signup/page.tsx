@@ -6,12 +6,12 @@ import useAuthModalStore from '@/stores/authModalStore';
 
 export default function SignupPage() {
     const router = useRouter();
-    const open = useAuthModalStore((s) => s.open);
+    const openModal = useAuthModalStore((s) => s.openModal);
 
     useEffect(() => {
-        open('signup', '/');
+        openModal();
         router.replace('/');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return null;

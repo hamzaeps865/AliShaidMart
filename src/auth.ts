@@ -7,6 +7,9 @@ import clientPromise from "@/lib/mongodb"
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: MongoDBAdapter(clientPromise),
     trustHost: true,
+    session: {
+        strategy: "jwt", // Use JWT so middleware can verify sessions in Edge Runtime without hitting the DB
+    },
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -18,9 +21,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
     ],
     callbacks: {
-        async session({ session, user }) {
-            if (session.user) {
-                session.user.id = user.id;
+        async jwt({ token, user }) {
+            // On first sign-in, `user` is available — persist id into the token
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            // With JWT strategy, use `token` (not `user`) to populate session
+            if (session.user && token.id) {
+                session.user.id = token.id as string;
             }
             return session;
         },

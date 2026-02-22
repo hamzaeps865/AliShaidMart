@@ -18,14 +18,16 @@ const product: ProductType = {
     purple: "/products/1p.png",
     green: "/products/1gr.png",
   },
+  category: "t-shirts",
 };
 
 export const generateMetadata = async ({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) => {
-  // TODO:get the product from db
+  const { id } = await params;
+  // TODO: get the product from db using id
   // TEMPORARY
   return {
     title: product.name,

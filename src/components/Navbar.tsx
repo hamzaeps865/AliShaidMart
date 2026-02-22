@@ -5,12 +5,13 @@ import Link from "next/link";
 import SearchBar from "./Searchbar";
 import { Home, ShoppingCart, X, Menu, User, Mail, LogOut } from "lucide-react";
 import ShoppingCartIcon from "./ShoppingCartIcon";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import AuthModal from "./AuthModal";
 import { useSession, signOut } from 'next-auth/react';
+import useAuthModalStore from "@/stores/authModalStore";
 
 const Navbar = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { isOpen: isAuthModalOpen, openModal, closeModal } = useAuthModalStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession();
@@ -91,7 +92,7 @@ const Navbar = () => {
               </div>
             ) : (
               <button
-                onClick={() => setIsAuthModalOpen(true)}
+                onClick={() => openModal()}
                 className="hidden cursor-pointer sm:inline-flex items-center justify-center text-sm font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors px-4 py-2 rounded-lg shadow-sm shadow-yellow-200"
               >
                 Login
@@ -243,7 +244,7 @@ const Navbar = () => {
               </div>
             ) : (
               <button
-                onClick={() => { setIsAuthModalOpen(true); setIsMenuOpen(false); }}
+                onClick={() => { openModal(); setIsMenuOpen(false); }}
                 className="w-full flex items-center justify-center gap-2 text-base font-semibold text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors py-3.5 rounded-xl  shadow-yellow-200 cursor-pointer"
               >
                 Login / Register
@@ -252,10 +253,12 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => closeModal()}
+        />
+      </Suspense>
     </>
   );
 };
