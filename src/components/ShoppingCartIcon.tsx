@@ -13,6 +13,7 @@ const ShoppingCartIcon = () => {
   const router = useRouter()
 
   const handleCartClick = () => {
+    if (status === 'loading') return // Wait for session to resolve
     if (status === 'authenticated') {
       router.push('/cart')
     } else {
