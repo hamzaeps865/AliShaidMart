@@ -33,7 +33,7 @@ const Footer = () => {
       {/* 3 */}
       <div className="flex flex-col gap-4  text-sm text-gray-400 items-center md:items-start">
         <p className='text-sm text-amber-50'>Company</p>
-        <Link href="/">About</Link>
+        <Link href="/">About Us</Link>
         <Link href="/contact">Contact</Link>
         <Link href="/">Blog</Link>
         <Link href="/">Affiliate Program</Link>
