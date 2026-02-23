@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import SessionWrapper from "@/components/SessionWrapper";
 import AuthGuard from "@/components/AuthGuard";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import { auth } from "@/auth";
 
 const geistSans = Geist({
@@ -47,6 +48,7 @@ export default async function RootLayout({
           </div>
         </SessionWrapper>
         <ToastContainer position="bottom-right" />
+        <Analytics />
       </body>
     </html>
   );
