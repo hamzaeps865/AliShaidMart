@@ -1,4 +1,5 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
 
 /**
@@ -18,6 +19,10 @@ const PRIVATE_ROUTES = [
  * Logged-in users are redirected to home.
  */
 const AUTH_ONLY_ROUTES = ["/login", "/signup"];
+
+// Initialize NextAuth with the Edge-safe config (no DB adapter).
+// JWT sessions are verified via the AUTH_SECRET without hitting MongoDB.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
     const { nextUrl } = req;
